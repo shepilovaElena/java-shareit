@@ -48,7 +48,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable
+    public ResponseEntity<UserDto> updateUser(@PathVariable
                                         @NotNull(message = "the field cannot be empty")
                                         @Positive(message = "user id must be positive")
                                         Long userId,

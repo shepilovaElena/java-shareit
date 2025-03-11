@@ -69,7 +69,7 @@ public class UserRepositoryMpl implements UserRepository {
 
     private void checkUserId(long userId) {
         if (!userMap.containsKey(userId)) {
-            throw new NoSuchElementException("user not found");
+            throw new NoSuchElementException("User with id = " + userId + " not found.");
         }
     }
 }

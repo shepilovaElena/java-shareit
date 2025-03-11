@@ -23,12 +23,14 @@ public class ItemService {
     private final UserRepository userRepository;
 
     public List<ItemDto> getItemsList(Long userId) {
+        checkUserId(userId);
         return itemRepository.getItemsList(userId).stream()
                 .map(ItemMapper::toDto)
                 .toList();
     }
 
     public ItemDto getItemById(long id, long userId) {
+        checkUserId(userId);
         checkItemId(id, userId);
         return ItemMapper.toDto(itemRepository.getItemById(id));
     }
@@ -58,13 +60,8 @@ public class ItemService {
     }
 
     private void checkUserId(long userId) {
-        Optional<User> userOptional = userRepository.getAllUsersList().stream()
-                .filter(user -> user.getId() == userId)
-                .findFirst();
-        if (userOptional.isEmpty()) {
-            throw new NoSuchElementException("User with id = " + userId + " not found.");
+        userRepository.getUserById(userId);
         }
-    }
 
     private void checkItemId(Long itemId, Long userId) {
         Optional<Item> itemOptional = itemRepository.getItemsList(userId).stream()

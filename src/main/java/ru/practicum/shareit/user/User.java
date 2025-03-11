@@ -13,11 +13,6 @@ import lombok.Data;
 @Builder
 public class User {
     long id;
-    @NotNull
-    @NotBlank
     String name;
-    @NotNull
-    @NotBlank
-    @Email
     String email;
 }

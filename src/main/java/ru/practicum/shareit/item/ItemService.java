@@ -75,7 +75,7 @@ public class ItemService {
         }
     }
 
-    private void checkIsOwner(Long userId, Long itemId) {
+    private void checkIsOwner(long userId, long itemId) {
         if (itemRepository.getItemById(itemId).getOwnerId() != userId) {
             throw new NoSuchElementException("User with id = " + userId + " isn't owner for item with id = " + itemId + ".");
         }

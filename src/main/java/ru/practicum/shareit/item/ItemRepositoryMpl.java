@@ -52,7 +52,7 @@ public class ItemRepositoryMpl implements ItemRepository {
 
     @Override
     public List<Item> searchItems(String text, Long userId) {
-        return getItemsList(userId).stream()
+        return itemMap.values().stream()
                 .filter(item -> item.getAvailable())
                 .filter(item ->
                         (item.getName().toLowerCase().contains(text.toLowerCase())

@@ -8,7 +8,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.util.List;
@@ -31,8 +30,7 @@ public class ItemService {
 
     public ItemDto getItemById(long id, long userId) {
         checkUserId(userId);
-        checkItemId(id, userId);
-        return ItemMapper.toDto(itemRepository.getItemById(id));
+        return ItemMapper.toDto(checkAndGetItemById(id));
     }
 
     public ItemDto addNewItem(ItemCreateDto itemCreateDto, long userId) {
@@ -45,7 +43,8 @@ public class ItemService {
 
     public ItemDto updateItem(ItemUpdateDto itemUpdateDto, long itemId, long userId) {
         checkUserId(userId);
-        checkItemId(itemId, userId);
+        checkAndGetItemById(itemId);
+        checkIsOwner(userId, itemId);
 
         Item updateItem = ItemMapper.toItem(itemUpdateDto);
         updateItem.setOwnerId(userId);
@@ -54,6 +53,10 @@ public class ItemService {
     }
 
     public List<ItemDto> searchItems(String text, long userId) {
+        checkUserId(userId);
+        if (text.isBlank()) {
+            return List.of();
+        }
         return itemRepository.searchItems(text, userId).stream()
                 .map(ItemMapper::toDto)
                 .toList();
@@ -63,12 +66,18 @@ public class ItemService {
         userRepository.getUserById(userId);
         }
 
-    private void checkItemId(Long itemId, Long userId) {
-        Optional<Item> itemOptional = itemRepository.getItemsList(userId).stream()
-                .filter(item -> item.getId() == itemId)
-                .findFirst();
+    private Item checkAndGetItemById(Long itemId) {
+        Optional<Item> itemOptional = Optional.ofNullable(itemRepository.getItemById(itemId));
         if (itemOptional.isEmpty()) {
             throw new NoSuchElementException("Item with id = " + itemId + " not found.");
+        } else {
+            return itemOptional.get();
+        }
+    }
+
+    private void checkIsOwner(Long userId, Long itemId) {
+        if (itemRepository.getItemById(itemId).getOwnerId() != userId) {
+            throw new NoSuchElementException("User with id = " + userId + " isn't owner for item with id = " + itemId + ".");
         }
     }
 }

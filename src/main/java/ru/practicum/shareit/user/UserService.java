@@ -9,6 +9,8 @@ import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,27 +18,61 @@ public class UserService {
     private final UserRepository userRepository;
 
     public List<UserDto> getAllUsersList() {
-        return userRepository.getAllUsersList().stream()
+        return userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .toList();
     }
 
     public UserDto getUserById(long id) {
-        return UserMapper.toUserDto(userRepository.getUserById(id));
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            throw new NoSuchElementException("User with id = " + id + " not found.");
+        }
+        return UserMapper.toUserDto(userOptional.get());
     }
 
     public UserDto addUser(UserCreateDto userCreateDto) {
-        User user = userRepository.addUser(UserMapper.toUser(userCreateDto));
+        validateUserEmail(userCreateDto.getEmail());
+        User user = UserMapper.toUser(userCreateDto);
+        userRepository.save(user);
         return UserMapper.toUserDto(user);
     }
 
     public UserDto updateUser(Long userId, UserUpdateDto userUpdateDto) {
-        User user = UserMapper.toUser(userUpdateDto);
-        user.setId(userId);
-       return UserMapper.toUserDto(userRepository.updateUser(user));
+        validateUserEmail(userUpdateDto.getEmail());
+        checkUserId(userId);
+        User dbUser = userRepository.findById(userId).get();
+        User updateUser = UserMapper.toUser(userUpdateDto);
+        if (updateUser.getName() != null && updateUser.getEmail() != null) {
+            userRepository.save(updateUser);
+            return UserMapper.toUserDto(updateUser);
+        }
+        if (updateUser.getName() == null) {
+            updateUser.setName(dbUser.getName());
+        }
+        if (updateUser.getEmail() == null) {
+            updateUser.setEmail(dbUser.getEmail());
+        }
+        userRepository.save(updateUser);
+        return UserMapper.toUserDto(updateUser);
     }
 
     public void deleteUserById(long id) {
-        userRepository.deleteUserById(id);
+        checkUserId(id);
+        userRepository.deleteById(id);
+    }
+
+
+    private void validateUserEmail(String email) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isPresent()) {
+            throw new IllegalArgumentException("User with the email "  + email + " already exist");
+        }
+    }
+
+    private void checkUserId(long userId) {
+        if (userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with id = " + userId + " not found.");
+        }
     }
 }

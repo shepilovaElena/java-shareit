@@ -23,8 +23,10 @@ public class ItemService {
 
     public List<ItemDto> getItemsList(Long userId) {
         checkUserId(userId);
-        return itemRepository.getItemsList(userId).stream()
-                .map(ItemMapper::toDto)
+        return itemRepository.findAllByUserId(userId).stream()
+                .map(itemShort -> ItemDto.builder()
+                                         .name(itemShort.getName())
+                                         .description(itemShort.getDescription()).build())
                 .toList();
     }
 
@@ -35,10 +37,9 @@ public class ItemService {
 
     public ItemDto addNewItem(ItemCreateDto itemCreateDto, long userId) {
         checkUserId(userId);
-
         itemCreateDto.setOwnerId(userId);
         Item item = ItemMapper.toItem(itemCreateDto);
-        return ItemMapper.toDto(itemRepository.addNewItem(item));
+        return ItemMapper.toDto(itemRepository.save(item));
     }
 
     public ItemDto updateItem(ItemUpdateDto itemUpdateDto, long itemId, long userId) {
@@ -49,7 +50,7 @@ public class ItemService {
         Item updateItem = ItemMapper.toItem(itemUpdateDto);
         updateItem.setOwnerId(userId);
         updateItem.setId(itemId);
-        return ItemMapper.toDto(itemRepository.updateItem(updateItem));
+        return ItemMapper.toDto(itemRepository.save(updateItem));
     }
 
     public List<ItemDto> searchItems(String text, long userId) {
@@ -57,26 +58,27 @@ public class ItemService {
         if (text.isBlank()) {
             return List.of();
         }
-        return itemRepository.searchItems(text, userId).stream()
+        return itemRepository.findAllByUserIdNameAndDescriptionContainingIgnoreCase(userId, text).stream()
                 .map(ItemMapper::toDto)
                 .toList();
     }
 
     private void checkUserId(long userId) {
-        userRepository.getUserById(userId);
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("Item with id = " + userId + " not found.");
+        }
         }
 
     private Item checkAndGetItemById(Long itemId) {
-        Optional<Item> itemOptional = Optional.ofNullable(itemRepository.getItemById(itemId));
+        Optional<Item> itemOptional = itemRepository.findById(itemId);
         if (itemOptional.isEmpty()) {
             throw new NoSuchElementException("Item with id = " + itemId + " not found.");
-        } else {
-            return itemOptional.get();
         }
+        return itemOptional.get();
     }
 
     private void checkIsOwner(long userId, long itemId) {
-        if (itemRepository.getItemById(itemId).getOwnerId() != userId) {
+        if (checkAndGetItemById(itemId).getOwnerId() != userId) {
             throw new NoSuchElementException("User with id = " + userId + " isn't owner for item with id = " + itemId + ".");
         }
     }

@@ -21,7 +21,10 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<BookingDto> addBooking(@Valid
                                                  @RequestBody
-                                                 BookingCreateDto booking) {
+                                                 BookingCreateDto booking,
+                                                 @RequestHeader("X-Sharer-User-Id")
+                                                 @NotNull
+                                                 Long userId) {
         return null;
     }
 
@@ -51,7 +54,10 @@ public class BookingController {
 
     @GetMapping("/owner")
     public ResponseEntity<List<Booking>> getAllBookingsForAllUsersItems(@RequestParam(defaultValue = "ALL")
-                                                                        String state) {
+                                                                        String state,
+                                                                        @RequestHeader("X-Sharer-User-Id")
+                                                                        @NotNull
+                                                                        Long userId) {
         return null;
     }
 }

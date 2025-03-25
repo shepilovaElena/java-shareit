@@ -23,7 +23,11 @@ public class Booking {
     long id;
     LocalDateTime start;
     LocalDateTime ending;
+    @ManyToOne
+    @JoinColumn(name = "item_id")
     Item item;
+    @ManyToOne /////// ? уточнить
+    @JoinColumn(name = "booker_id")
     User booker;
     @Enumerated(EnumType.STRING)
     BookingStatus status;

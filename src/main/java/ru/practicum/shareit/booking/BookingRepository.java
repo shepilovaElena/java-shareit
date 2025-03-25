@@ -20,15 +20,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.id = :id")
     void bookingApprove(@Param("id") Long bookingId, @Param("status") BookingStatus newStatus);
 
-    List<Booking> findAllByUserId(long userId);
+    List<Booking> findAllByBookerId(long userId);
 
-    List<Booking> findAllByUserIdAndEndingBefore(long userId, LocalDateTime now);
+    List<Booking> findAllByBookerIdAndEndingBefore(long userId, LocalDateTime now);
 
-    List<Booking> findAllByUserIdAndEndingAfter(long userId, LocalDateTime now);
+    List<Booking> findAllByBookerIdAndEndingAfter(long userId, LocalDateTime now);
 
     @Query("SELECT b " +
             "FROM Booking AS b  " +
-            "WHERE b.bookerId = :id " +
+            "WHERE b.booker.id = :id " +
             "AND :now BETWEEN b.start AND b.ending" )
-    List<Booking> findAllByUserIdCurrentBooking(@Param("id") long userId, @Param("now") LocalDateTime now);
+    List<Booking> findAllByBookerIdCurrentBooking(@Param("id") long userId, @Param("now") LocalDateTime now);
+
+    List<Booking> findAllByBookerIdAndStatus(long userId, BookingStatus status);
 }

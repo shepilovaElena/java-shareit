@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.model;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.user.model.User;
 
 
 /**
@@ -23,9 +24,10 @@ public class Item {
    String description;
    @Column(name = "is_available")
    Boolean available;
-   @Column(name = "owner_id", nullable = false)
-   Long ownerId;
+   @ManyToOne
+   @JoinColumn(name = "owner_id")
+   User owner;
    String request;
-   Booking lastBooking;
-   Booking nextBooking;
+//   Booking lastBooking;
+//   Booking nextBooking;
 }

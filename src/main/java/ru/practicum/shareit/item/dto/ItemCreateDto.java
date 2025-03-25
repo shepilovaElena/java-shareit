@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import ru.practicum.shareit.user.model.User;
 
 /**
  * TODO Sprint add-controllers.
@@ -22,6 +24,7 @@ public class ItemCreateDto {
     String description;
     @NotNull(message = "the field cannot be empty")
     Boolean available;
-    Long ownerId;
+    @NotNull(message = "the field cannot be empty")
+    User owner;
     Long request;
 }

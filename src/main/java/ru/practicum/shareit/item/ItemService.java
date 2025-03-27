@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import jakarta.persistence.Transient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;

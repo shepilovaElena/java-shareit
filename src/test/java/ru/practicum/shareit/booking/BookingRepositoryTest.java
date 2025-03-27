@@ -1,8 +1,6 @@
 package ru.practicum.shareit.booking;
 
-import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +13,9 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Random;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ExtendWith(SpringExtension.class)

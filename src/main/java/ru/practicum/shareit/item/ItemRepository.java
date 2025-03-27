@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
@@ -15,7 +16,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "FROM Item i " +
             "WHERE i.owner.id = :ownerId " +
             "AND (LOWER(i.name) LIKE LOWER(CONCAT('%', :text, '%')) " +
-            "OR LOWER(i.description) LIKE LOWER(CONCAT('%', :text, '%')))")
-    List<Item> findAllByOwnerIdNameDescriptionContainingIgnoreCase(@Param("ownerId") long userId,@Param("text") String text);
+            "OR LOWER(i.description) LIKE LOWER(CONCAT('%', :text, '%'))) " +
+            "AND i.available = true")
+    List<Item> findAllByOwnerIdAndText(@Param("ownerId") long userId, @Param("text") String text);
+
 
 }

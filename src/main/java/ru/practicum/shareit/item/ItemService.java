@@ -1,16 +1,21 @@
 package ru.practicum.shareit.item;
 
+import jakarta.persistence.Transient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.item.dto.ItemCreateDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.mapper.CommentMapper;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -21,19 +26,29 @@ import java.util.Optional;
 public class ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final BookingRepository bookingRepository;
 
+    @Transactional
     public List<ItemDto> getItemsList(Long userId) {
         checkUserAndGetUserById(userId);
         return itemRepository.findAllByOwnerId(userId).stream()
                 .map(itemShort -> ItemDto.builder()
                                          .name(itemShort.getName())
                                          .description(itemShort.getDescription()).build())
-                .toList();
+                                         .toList();
     }
 
+    @Transactional
     public ItemDto getItemById(long id, long userId) {
         checkUserAndGetUserById(userId);
-        return ItemMapper.toDto(checkAndGetItemById(id));
+        List<CommentShortDto> itemComments = commentRepository.findAllByItemId(id).stream()
+                .map(CommentMapper::toShortDto)
+                .toList();
+        Item item = checkAndGetItemById(id);
+        ItemDto itemDto = ItemMapper.toDto(item);
+        itemDto.setComments(itemComments);
+        return itemDto;
     }
 
     public ItemDto addNewItem(ItemCreateDto itemCreateDto, long userId) {
@@ -45,12 +60,22 @@ public class ItemService {
 
     public ItemDto updateItem(ItemUpdateDto itemUpdateDto, long itemId, long userId) {
         User user = checkUserAndGetUserById(userId);
-        checkAndGetItemById(itemId);
+        Item updatedItem = checkAndGetItemById(itemId);
         checkIsOwner(userId, itemId);
 
         Item updateItem = ItemMapper.toItem(itemUpdateDto);
         updateItem.setOwner(user);
         updateItem.setId(itemId);
+
+        if (itemUpdateDto.getAvailable() == null) {
+            updateItem.setAvailable(updatedItem.getAvailable());
+        }
+        if (itemUpdateDto.getDescription() == null) {
+            updateItem.setDescription(updatedItem.getDescription());
+        }
+        if (itemUpdateDto.getName() == null) {
+            updateItem.setName(updatedItem.getName());
+        }
         return ItemMapper.toDto(itemRepository.save(updateItem));
     }
 
@@ -59,9 +84,21 @@ public class ItemService {
         if (text.isBlank()) {
             return List.of();
         }
-        return itemRepository.findAllByOwnerIdNameDescriptionContainingIgnoreCase(userId, text).stream()
+        return itemRepository.findAllByOwnerIdAndText(userId, text).stream()
                 .map(ItemMapper::toDto)
                 .toList();
+    }
+
+    public CommentDto addNewComment(long itemId, long userId, CommentCreateDto commentCreateDto) {
+        Item item = checkAndGetItemById(itemId);
+        User user = checkAndGetUserById(userId);
+        checkIsBooker(itemId, userId);
+        Comment comment = CommentMapper.toComment(commentCreateDto);
+        comment.setItem(item);
+        comment.setAuthor(user);
+        itemRepository.save(item);
+
+        return CommentMapper.toDto(commentRepository.save(comment));
     }
 
     private User checkUserAndGetUserById(long userId) {
@@ -83,6 +120,21 @@ public class ItemService {
     private void checkIsOwner(long userId, long itemId) {
         if (checkAndGetItemById(itemId).getOwner().getId() != userId) {
             throw new NoSuchElementException("User with id = " + userId + " isn't owner for item with id = " + itemId + ".");
+        }
+    }
+
+    private User checkAndGetUserById(long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new NoSuchElementException("");
+        }
+        return userOptional.get();
+    }
+
+    private void checkIsBooker(long itemId, long userId) {
+        Optional<Booking> bookingOptional = bookingRepository.findByItemIdAndBookerId(itemId, userId);
+        if (bookingOptional.isEmpty()) {
+            throw new RuntimeException("User with id " + userId + " is not booker item with id " + itemId + ".");
         }
     }
 }

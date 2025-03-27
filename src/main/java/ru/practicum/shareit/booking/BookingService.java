@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -18,19 +20,32 @@ import java.util.Optional;
 public class BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     public BookingDto createBooking(BookingCreateDto createBooking, long userId) {
-        createBooking.setBooker(checkAndGetUserById(userId));
-        return BookingMapper.toDto(bookingRepository.save(BookingMapper.toBooking(createBooking)));
+        User user = checkAndGetUserById(userId);
+        Item item = checkAndGetItemById(createBooking.getItemId());
+        itemIsAvailable(item);
+        Booking booking = BookingMapper.toBooking(createBooking);
+        booking.setItem(item);
+        booking.setBooker(user);
+        checkBookingIntersection(booking);
+
+        return BookingMapper.toDto(bookingRepository.save(booking));
     }
 
-    public void bookingConfirmation(Long bookingId, boolean approve) {
-        checkBookingId(bookingId);
+    public BookingDto bookingConfirmation(long bookingId, long userId, boolean approved) {
+        Booking booking = checkBookingAndGetById(bookingId);
+        userIsOwner(booking.getItem(), userId);
+        checkAndGetUserById(userId);
 
-        if (approve) {
-            bookingRepository.bookingApprove(bookingId, BookingStatus.APPROVED);
+
+        if (approved) {
+            booking.setStatus(BookingStatus.APPROVED);
+            return BookingMapper.toDto(bookingRepository.save(booking));
         } else {
-            bookingRepository.bookingApprove(bookingId, BookingStatus.REJECTED);
+            booking.setStatus(BookingStatus.REJECTED);
+            return BookingMapper.toDto(bookingRepository.save(booking));
         }
     }
 
@@ -42,31 +57,31 @@ public class BookingService {
         return BookingMapper.toDto(bookingOptional.get());
     }
 
-    public List<BookingDto> getAllUsersBookings(String state, long userId) {
-        checkAndGetUserById(userId);
+    public List<BookingDto> getAllUsersBookings(String state, long booker) {
+        checkAndGetUserById(booker);
         switch (checkAndGetState(state)) {
             case ALL:
-                return bookingRepository.findAllByBookerId(userId).stream()
+                return bookingRepository.findAllByBookerId(booker).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case PAST:
-                return bookingRepository.findAllByBookerIdAndEndingBefore(userId,LocalDateTime.now()).stream()
+                return bookingRepository.findAllByBookerIdAndEndingBefore(booker,LocalDateTime.now()).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case FUTURE:
-                return bookingRepository.findAllByBookerIdAndEndingAfter(userId, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByBookerIdAndEndingAfter(booker, LocalDateTime.now()).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case CURRENT:
-                return bookingRepository.findAllByBookerIdCurrentBooking(userId, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByBookerIdCurrentBooking(booker, LocalDateTime.now()).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case WAITING:
-                return bookingRepository.findAllByBookerIdAndStatus(userId, BookingStatus.WAITING).stream()
+                return bookingRepository.findAllByBookerIdAndStatus(booker, BookingStatus.WAITING).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case REJECTED:
-                return bookingRepository.findAllByBookerIdAndStatus(userId, BookingStatus.REJECTED).stream()
+                return bookingRepository.findAllByBookerIdAndStatus(booker, BookingStatus.REJECTED).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             default:
@@ -74,41 +89,49 @@ public class BookingService {
         }
     }
 
-//    public List<BookingDto> getAllBookingsForAllUsersItems(String state, long userId) {
-//        switch (checkAndGetState(state)) {
-//            case ALL:
-//                return bookingRepository.findAllByBookerId(userId).stream()
-//                        .map(BookingMapper::toDto)
-//                        .toList();
-//            case PAST:
-//                return bookingRepository.findAllByUserIdAndEndingBefore(userId,LocalDateTime.now()).stream()
-//                        .map(BookingMapper::toDto)
-//                        .toList();
-//            case FUTURE:
-//                return bookingRepository.findAllByUserIdAndEndingAfter(userId, LocalDateTime.now()).stream()
-//                        .map(BookingMapper::toDto)
-//                        .toList();
-//            case CURRENT:
-//                return bookingRepository.findAllByUserIdCurrentBooking(userId, LocalDateTime.now()).stream()
-//                        .map(BookingMapper::toDto)
-//                        .toList();
-//            case WAITING:
-//                return bookingRepository.findAllByUserIdAndStatus(userId, BookingStatus.WAITING).stream()
-//                        .map(BookingMapper::toDto)
-//                        .toList();
-//            case REJECTED:
-//                return bookingRepository.findAllByUserIdAndStatus(userId, BookingStatus.REJECTED).stream()
-//                        .map(BookingMapper::toDto)
-//                        .toList();
-//            default:
-//                throw new IllegalArgumentException("This state does not exist.");
-//        }
-//    }
+    public List<BookingDto> getAllBookingsForAllUsersItems(String state, long owner) {
+        /// проверка существования owner'a и наличия у него вещей
+        checkAndGetUserById(owner);
+        if (itemRepository.findAllByOwnerId(owner).isEmpty()) {
+            return List.of();
+        }
 
-    private void checkBookingId(long bookingId) {
-        if (!bookingRepository.existsById(bookingId)) {
+        switch (checkAndGetState(state)) {
+            case ALL:
+                return bookingRepository.findAllByItemId(owner).stream()
+                        .map(BookingMapper::toDto)
+                        .toList();
+            case PAST:
+                return bookingRepository.findAllByItemIdAndEndingBefore(owner, LocalDateTime.now()).stream()
+                        .map(BookingMapper::toDto)
+                        .toList();
+            case FUTURE:
+                return bookingRepository.findAllByItemIdAndEndingAfter(owner, LocalDateTime.now()).stream()
+                        .map(BookingMapper::toDto)
+                        .toList();
+            case CURRENT:
+                return bookingRepository.findAllByItemIdCurrentBooking(owner, LocalDateTime.now()).stream()
+                        .map(BookingMapper::toDto)
+                        .toList();
+            case WAITING:
+                return bookingRepository.findAllByItemIdAndStatus(owner, BookingStatus.WAITING).stream()
+                        .map(BookingMapper::toDto)
+                        .toList();
+            case REJECTED:
+                return bookingRepository.findAllByItemIdAndStatus(owner, BookingStatus.REJECTED).stream()
+                        .map(BookingMapper::toDto)
+                        .toList();
+            default:
+                throw new IllegalArgumentException("This state does not exist.");
+        }
+    }
+
+    private Booking checkBookingAndGetById(long bookingId) {
+        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+        if (bookingOptional.isEmpty()) {
             throw new NoSuchElementException("Booking with id = " + bookingId + " not found.");
         }
+        return bookingOptional.get();
     }
 
     private BookingState checkAndGetState(String state) {
@@ -126,5 +149,35 @@ public class BookingService {
             throw new NoSuchElementException("User with id = " + userId + " not found.");
         }
         return userOptional.get();
+    }
+
+    private void checkBookingIntersection(Booking booking) {
+        LocalDateTime startTime = booking.getStart();
+        LocalDateTime endTime = booking.getEnding();
+        long itemId = booking.getItem().getId();
+
+        if (bookingRepository.findCountBookingsForItem(itemId, startTime, endTime) > 0) {
+            throw new IllegalArgumentException("The time of this booking overlaps with an existing booking.");
+        }
+    }
+
+    private Item checkAndGetItemById(long itemId) {
+        Optional<Item> itemOptional = itemRepository.findById(itemId);
+        if (itemOptional.isEmpty()) {
+            throw new NoSuchElementException("Item with id = " + itemId + " not found.");
+        }
+        return itemOptional.get();
+    }
+
+    private void itemIsAvailable(Item item) {
+        if (!item.getAvailable()) {
+            throw new RuntimeException("This item is not available.");
+        }
+    }
+
+    private void userIsOwner(Item item, long userId) {
+        if (item.getOwner().getId() != userId) {
+            throw new RuntimeException("User with id " + userId + " is not owner item with id " + item.getId());
+        }
     }
 }

@@ -4,8 +4,7 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ru.practicum.shareit.booking.BookingStatus;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
+
 
 import java.time.LocalDateTime;
 
@@ -22,8 +21,7 @@ public class BookingCreateDto {
     @Future(message = "the end of booking should be in the future")
     LocalDateTime end;
     @NotNull(message = "the field cannot be empty")
-    Item item;
-    @NotNull(message = "the field cannot be empty")
-    User booker;
+    Long itemId;
+    Long bookerId;
     BookingStatus status;
 }

@@ -3,16 +3,20 @@ package ru.practicum.shareit.item.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.user.model.User;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * TODO Sprint add-controllers.
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ItemCreateDto {
     Long id;
     @NotNull(message = "the field cannot be empty")
@@ -24,7 +28,7 @@ public class ItemCreateDto {
     String description;
     @NotNull(message = "the field cannot be empty")
     Boolean available;
-    @NotNull(message = "the field cannot be empty")
     User owner;
     Long request;
+    ///List<Booking> itemCommentsList = new ArrayList<>();
 }

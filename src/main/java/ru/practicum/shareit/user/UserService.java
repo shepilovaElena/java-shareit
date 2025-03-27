@@ -43,6 +43,7 @@ public class UserService {
         checkUserId(userId);
         User dbUser = userRepository.findById(userId).get();
         User updateUser = UserMapper.toUser(userUpdateDto);
+        updateUser.setId(userId);
         if (updateUser.getName() != null && updateUser.getEmail() != null) {
             userRepository.save(updateUser);
             return UserMapper.toUserDto(updateUser);
@@ -71,7 +72,7 @@ public class UserService {
     }
 
     private void checkUserId(long userId) {
-        if (userRepository.existsById(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with id = " + userId + " not found.");
         }
     }

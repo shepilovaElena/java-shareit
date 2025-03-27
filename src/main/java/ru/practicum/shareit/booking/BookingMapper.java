@@ -10,9 +10,7 @@ public class BookingMapper {
         return Booking.builder()
                 .start(bookingCreateDto.getStart())
                 .ending(bookingCreateDto.getEnd())
-                .item(bookingCreateDto.getItem())
-                .booker(bookingCreateDto.getBooker())
-                .status(bookingCreateDto.getStatus())
+                .status(BookingStatus.WAITING)
                 .build();
     }
 
@@ -23,8 +21,8 @@ public class BookingMapper {
                 .start(booking.getStart())
                 .end(booking.getEnding())
                 .item(booking.getItem())
-                .status(booking.getStatus())
                 .booker(booking.getBooker())
+                .status(booking.getStatus())
                 .build();
     }
 }

@@ -5,6 +5,9 @@ import lombok.*;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.user.model.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * TODO Sprint add-controllers.
@@ -27,7 +30,17 @@ public class Item {
    @ManyToOne
    @JoinColumn(name = "owner_id")
    User owner;
+   @Transient
    String request;
-//   Booking lastBooking;
-//   Booking nextBooking;
+   @OneToOne(fetch = FetchType.EAGER)
+   @JoinColumn(name = "last_booking_id")
+   @Builder.Default
+   Booking lastBooking = null;
+   @OneToOne(fetch = FetchType.EAGER)
+   @JoinColumn(name = "next_booking_id")
+   @Builder.Default
+   Booking nextBooking = null;
+   @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
+   @Builder.Default
+   List<Comment> itemComments = new ArrayList<>();
 }

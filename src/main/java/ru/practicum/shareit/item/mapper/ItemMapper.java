@@ -26,6 +26,7 @@ public class ItemMapper {
     }
 
     public static ItemDto toDto(Item item) {
+
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -33,6 +34,8 @@ public class ItemMapper {
                 .description(item.getDescription())
                 .request(item.getRequest())
                 .available(item.getAvailable())
+                .lastBooking(item.getLastBooking())
+                .nextBooking(item.getNextBooking())
                 .build();
     }
 

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.dto.*;
@@ -14,6 +15,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -90,7 +92,7 @@ public class ItemService {
     public CommentDto addNewComment(long itemId, long userId, CommentCreateDto commentCreateDto) {
         Item item = checkAndGetItemById(itemId);
         User user = checkAndGetUserById(userId);
-        checkIsBooker(itemId, userId);
+        checkWasBooker(itemId, userId);
         Comment comment = CommentMapper.toComment(commentCreateDto);
         comment.setItem(item);
         comment.setAuthor(user);
@@ -129,10 +131,10 @@ public class ItemService {
         return userOptional.get();
     }
 
-    private void checkIsBooker(long itemId, long userId) {
-        Optional<Booking> bookingOptional = bookingRepository.findByItemIdAndBookerId(itemId, userId);
+    private void checkWasBooker(long itemId, long userId) {
+        Optional<Booking> bookingOptional = bookingRepository.findByItemIdAndBookerIdAndStatusAndEndingBefore(itemId, userId, BookingStatus.APPROVED, LocalDateTime.now());
         if (bookingOptional.isEmpty()) {
-            throw new RuntimeException("User with id " + userId + " is not booker item with id " + itemId + ".");
+            throw new RuntimeException("User with id " + userId + " сannot leave a comment on the item with id " + itemId + ".");
         }
     }
 }

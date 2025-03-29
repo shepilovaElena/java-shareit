@@ -33,8 +33,8 @@ public class ItemService {
         checkUserAndGetUserById(userId);
 
         List<Item> itemsList = itemRepository.findAllByOwnerId(userId);
-        List<Booking> bookingsList =  bookingRepository.findByItemIdInAndStatusOrderByStartDesc(itemsList
-                , BookingStatus.APPROVED);
+        List<Booking> bookingsList =  bookingRepository.findByItemIdInAndStatusOrderByStartDesc(itemsList,
+                BookingStatus.APPROVED);
 
         Map<Long, List<Booking>> bookingsMap = bookingsList.stream()
                 .collect(Collectors.groupingBy(
@@ -44,7 +44,7 @@ public class ItemService {
                 list.sort(Comparator.comparing(Booking::getStart))
         );
 
-        for(Item item : itemsList) {
+        for (Item item : itemsList) {
             List<Booking> bookings = bookingsMap.get(item.getId());
 
             if (bookings == null) {

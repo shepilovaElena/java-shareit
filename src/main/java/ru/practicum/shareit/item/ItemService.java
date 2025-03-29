@@ -16,9 +16,8 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,11 +31,44 @@ public class ItemService {
     @Transactional
     public List<ItemDto> getItemsList(Long userId) {
         checkUserAndGetUserById(userId);
-        return itemRepository.findAllByOwnerId(userId).stream()
-                .map(itemShort -> ItemDto.builder()
-                                         .name(itemShort.getName())
-                                         .description(itemShort.getDescription()).build())
-                                         .toList();
+
+        List<Item> itemsList = itemRepository.findAllByOwnerId(userId);
+        List<Booking> bookingsList =  bookingRepository.findByItemIdInAndStatusOrderByStartDesc(itemsList
+                , BookingStatus.APPROVED);
+
+        Map<Long, List<Booking>> bookingsMap = bookingsList.stream()
+                .collect(Collectors.groupingBy(
+                        booking -> booking.getItem().getId()));
+
+        bookingsMap.forEach((id, list) ->
+                list.sort(Comparator.comparing(Booking::getStart))
+        );
+
+        for(Item item : itemsList) {
+            List<Booking> bookings = bookingsMap.get(item.getId());
+
+            if (bookings == null) {
+                continue;
+            }
+            Booking nextBooking = bookings.stream()
+                    .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
+                    .findFirst()
+                    .orElse(null);
+            item.setNextBooking(nextBooking);
+            item.setLastBooking(bookings.getLast());
+        }
+
+        List<Comment> commentList = commentRepository.findAllByItemList(itemsList);
+        Map<Long, List<Comment>> commentMap = commentList.stream()
+                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
+
+        for (Item item : itemsList) {
+            item.setItemComments(commentMap.getOrDefault(item.getId(), new ArrayList<>()));
+        }
+
+       return itemsList.stream()
+                .map(ItemMapper::toDto)
+                .toList();
     }
 
     @Transactional

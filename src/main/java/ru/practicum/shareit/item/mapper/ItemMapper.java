@@ -36,6 +36,7 @@ public class ItemMapper {
                 .available(item.getAvailable())
                 .lastBooking(item.getLastBooking())
                 .nextBooking(item.getNextBooking())
+                .comments(item.getItemComments().stream().map(CommentMapper::toShortDto).toList())
                 .build();
     }
 

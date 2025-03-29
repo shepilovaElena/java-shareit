@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.model;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ru.practicum.shareit.booking.BookingStatus;
@@ -36,4 +37,9 @@ public class Booking {
     User booker;
     @Enumerated(EnumType.STRING)
     BookingStatus status;
+
+    @AssertTrue(message = "the start of the booking must be earlier than the end")
+        boolean isStartBeforeEnding() {
+        return start.isBefore(ending);
+    }
 }

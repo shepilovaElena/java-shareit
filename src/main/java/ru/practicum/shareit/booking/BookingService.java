@@ -39,6 +39,9 @@ public class BookingService {
         userIsOwner(booking.getItem(), userId);
         checkAndGetUserById(userId);
 
+        if (!booking.getStatus().equals(BookingStatus.WAITING)) {
+            return BookingMapper.toDto(booking);
+        }
 
         if (approved) {
             booking.setStatus(BookingStatus.APPROVED);
@@ -49,12 +52,11 @@ public class BookingService {
         }
     }
 
-    public BookingDto getBookingById(long bookingId) {
-        Optional<Booking> bookingOptional =  bookingRepository.findById(bookingId);
-        if (bookingOptional.isEmpty()) {
-            throw new NoSuchElementException("Booking with id = " + bookingId + " not found.");
-        }
-        return BookingMapper.toDto(bookingOptional.get());
+    public BookingDto getBookingById(long bookingId, long userId) {
+        Booking booking =  checkBookingAndGetById(bookingId);
+        if (booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
+            return BookingMapper.toDto(booking);
+        } else throw new IllegalArgumentException("A request can only be made by the owner of the item or the booking.");
     }
 
     public List<BookingDto> getAllUsersBookings(String state, long booker) {
@@ -90,7 +92,7 @@ public class BookingService {
     }
 
     public List<BookingDto> getAllBookingsForAllUsersItems(String state, long owner) {
-        /// проверка существования owner'a и наличия у него вещей
+
         checkAndGetUserById(owner);
         if (itemRepository.findAllByOwnerId(owner).isEmpty()) {
             return List.of();
@@ -180,4 +182,7 @@ public class BookingService {
             throw new RuntimeException("User with id " + userId + " is not owner item with id " + item.getId());
         }
     }
+
+
+
 }

@@ -48,8 +48,11 @@ public class BookingController {
     @GetMapping("{bookingId}")
     public ResponseEntity<BookingDto> getBookingById(@PathVariable
                                                      @NotNull
-                                                     Long bookingId) {
-        return ResponseEntity.ok(bookingService.getBookingById(bookingId));
+                                                     Long bookingId,
+                                                     @RequestHeader("X-Sharer-User-Id")
+                                                     @NotNull
+                                                     Long userId) {
+        return ResponseEntity.ok(bookingService.getBookingById(bookingId, userId));
     }
 
     @GetMapping

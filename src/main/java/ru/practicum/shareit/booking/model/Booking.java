@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.model;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ru.practicum.shareit.booking.BookingStatus;

@@ -38,8 +38,4 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     BookingStatus status;
 
-    @AssertTrue(message = "the start of the booking must be earlier than the end")
-        boolean isStartBeforeEnding() {
-        return start.isBefore(ending);
-    }
 }

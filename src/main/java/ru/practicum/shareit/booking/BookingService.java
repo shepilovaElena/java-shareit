@@ -40,7 +40,7 @@ public class BookingService {
         checkAndGetUserById(userId);
 
         if (!booking.getStatus().equals(BookingStatus.WAITING)) {
-            return BookingMapper.toDto(booking);
+            throw new IllegalArgumentException("The booking status must be WAITING.");
         }
 
         if (approved) {

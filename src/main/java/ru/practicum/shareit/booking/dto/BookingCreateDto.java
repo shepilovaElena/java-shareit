@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -24,4 +25,9 @@ public class BookingCreateDto {
     Long itemId;
     Long bookerId;
     BookingStatus status;
+
+    @AssertTrue(message = "the start of the booking must be earlier than the end")
+    boolean isStartBeforeEnd() {
+        return start.isBefore(end);
+    }
 }

@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,11 +15,10 @@ import ru.practicum.shareit.booking.dto.BookingState;
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class BookingController {
 
     private final BookingClient bookingClient;
-
-    ///  нужно ли возвращать dto'шки?
 
     @PostMapping
     public ResponseEntity<Object> addBooking(@Valid
@@ -45,25 +45,21 @@ public class BookingController {
 
     @GetMapping("{bookingId}")
     public ResponseEntity<Object> getBookingById(@PathVariable
-                                                     @NotNull
-                                                     Long bookingId,
-                                                     @RequestHeader("X-Sharer-User-Id")
-                                                     @NotNull
-                                                     Long userId) {
+                                                 @NotNull
+                                                 Long bookingId,
+                                                 @RequestHeader("X-Sharer-User-Id")
+                                                 @NotNull
+                                                 Long userId) {
         return bookingClient.getBooking(bookingId, userId);
     }
 
     @GetMapping
     public ResponseEntity<Object> getAllUsersBookings(@RequestParam(defaultValue = "ALL")
                                                       BookingState state,
-                                                      @RequestParam(defaultValue = "10")
-                                                      Integer size, ///?
-                                                      @RequestParam
-                                                      Integer from, ///?
                                                       @RequestHeader("X-Sharer-User-Id")
                                                       @NotNull
                                                       Long userId) {
-        return bookingClient.getBookings(userId, state, from, size);
+        return bookingClient.getBookings(userId, state);
     }
 
     @GetMapping("/owner")

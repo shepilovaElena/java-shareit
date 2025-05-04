@@ -9,9 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-bookings.
- */
+
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
@@ -33,13 +31,13 @@ public class BookingController {
                                                           Long bookingId,
                                                           @RequestHeader("X-Sharer-User-Id")
                                                           Long userId,
-                                                          @RequestParam
+                                                          @RequestBody
                                                           Boolean approved) {
         return ResponseEntity.ok(bookingService.bookingConfirmation(bookingId, userId, approved));
     }
 
     @GetMapping("{bookingId}")
-    public ResponseEntity<BookingDto> getBookingById(@PathVariable
+    public ResponseEntity<BookingDto> getBookingById(@PathVariable("bookingId")
                                                      Long bookingId,
                                                      @RequestHeader("X-Sharer-User-Id")
                                                      Long userId) {
@@ -49,13 +47,9 @@ public class BookingController {
     @GetMapping
     public ResponseEntity<List<BookingDto>> getAllUsersBookings(@RequestParam(defaultValue = "ALL")
                                                                 String state,
-                                                                @RequestParam(defaultValue = "10")
-                                                                Integer size,
-                                                                @RequestParam
-                                                                Integer from,
                                                                 @RequestHeader("X-Sharer-User-Id")
                                                                 Long userId) {
-        return ResponseEntity.ok(bookingService.getAllUsersBookings(state, userId, size, from));
+        return ResponseEntity.ok(bookingService.getAllUsersBookings(state, userId));
     }
 
     @GetMapping("/owner")

@@ -17,12 +17,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByBookerIdAndEndingBefore(long userId, LocalDateTime now);
 
-    List<Booking> findAllByBookerIdAndEndingAfter(long userId, LocalDateTime now);
+    List<Booking> findAllByBookerIdAndStartAfter(long userId, LocalDateTime now);
 
     @Query("SELECT b " +
             "FROM Booking AS b  " +
             "WHERE b.booker.id = :id " +
-            "AND :now BETWEEN b.start AND b.ending")
+            "AND :now > b.start " +
+            "AND :now < b.ending")
     List<Booking> findAllByBookerIdCurrentBooking(@Param("id") long userId, @Param("now") LocalDateTime now);
 
     List<Booking> findAllByBookerIdAndStatus(long userId, BookingStatus status);
@@ -31,32 +32,51 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "FROM Booking AS b " +
             "WHERE b.item.id = :itemId " +
             "AND b.status IN ('WAITING', 'APPROVED') " +
-            "AND (b.start NOT BETWEEN :start AND :end OR b.ending NOT BETWEEN :start AND :end) ")
+            "AND b.start < :end " +
+            "AND b.ending > :start")
     long findCountBookingsForItem(long itemId, LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT b " +
-            "FROM Booking AS b " +
-            "WHERE b.item.id = :itemId ")
-    List<Booking> findAllByItemId(long itemId);
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :ownerId " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllByItemsOwnerId(long ownerId);
 
-    List<Booking> findAllByItemIdAndEndingBefore(long userId, LocalDateTime now);
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :userId " +
+            "AND :now > b.ending " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllByItemsOwnerIdAndEndingBefore(long userId, LocalDateTime now);
 
-    List<Booking> findAllByItemIdAndEndingAfter(long userId, LocalDateTime now);
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :userId " +
+            "AND :now < b.start " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllByItemsOwnerIdAndStartAfter(long userId, LocalDateTime now);
 
-    @Query("SELECT b " +
-            "FROM Booking AS b " +
-            "WHERE b.item.id = :id " +
-            "AND :now BETWEEN b.start AND b.ending")
-    List<Booking> findAllByItemIdCurrentBooking(@Param("id") long userId, @Param("now") LocalDateTime now);
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :userId " +
+            "AND :now BETWEEN b.start AND b.ending " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllByItemsOwnerIdCurrentBooking(long userId, LocalDateTime now);
 
-    List<Booking> findAllByItemIdAndStatus(long userId, BookingStatus status);
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :userId " +
+            "AND b.status = :status " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllByItemsOwnerIdAndStatus(long userId, BookingStatus status);
 
     Optional<Booking> findByItemIdAndBookerIdAndStatusAndEndingBefore(long itemId, long bookerId, BookingStatus status, LocalDateTime now);
 
     @Query("SELECT b " +
             "FROM Booking b " +
             "WHERE b.item IN :itemsList " +
-            "AND b.status = :status ORDER BY b.start DESC")
+            "AND b.status = :status " +
+            "ORDER BY b.start DESC")
     List<Booking> findByItemIdInAndStatusOrderByStartDesc(@Param("itemsList") List<Item> itemsList, @Param("status") BookingStatus status);
 
 }

@@ -4,20 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.*;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
-@Validated
 public class ItemController {
     private final ItemService itemService;
 
@@ -39,7 +34,7 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<ItemDto> addNewItem(@RequestBody
-                                                  ItemCreateDto itemCreateDto,
+                                              ItemCreateDto itemCreateDto,
                                               @RequestHeader("X-Sharer-User-Id")
                                               Long userId) {
             log.info("Received a request to add new item.");

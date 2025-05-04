@@ -136,7 +136,7 @@ public class ItemService {
     private User checkUserAndGetUserById(long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
-            throw new NoSuchElementException("Item with id = " + userId + " not found.");
+            throw new NoSuchElementException("User with id = " + userId + " not found.");
         }
         return userOptional.get();
         }
@@ -151,14 +151,14 @@ public class ItemService {
 
     private void checkIsOwner(long userId, long itemId) {
         if (checkAndGetItemById(itemId).getOwner().getId() != userId) {
-            throw new NoSuchElementException("User with id = " + userId + " isn't owner for item with id = " + itemId + ".");
+                throw new NoSuchElementException("User with id = " + userId + " isn't owner for item with id = " + itemId + ".");
         }
     }
 
     private User checkAndGetUserById(long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
-            throw new NoSuchElementException("");
+            throw new NoSuchElementException("User with id = " + userId + " not found.");
         }
         return userOptional.get();
     }

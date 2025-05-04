@@ -59,8 +59,8 @@ public class BookingService {
         } else throw new IllegalArgumentException("A request can only be made by the owner of the item or the booking.");
     }
 
-    /// дописать метод исходя из getaway.BookingClient
-    public List<BookingDto> getAllUsersBookings(String state, long booker, int from, int size) {
+
+    public List<BookingDto> getAllUsersBookings(String state, long booker) {
         checkAndGetUserById(booker);
         switch (checkAndGetState(state)) {
             case ALL:
@@ -72,7 +72,7 @@ public class BookingService {
                         .map(BookingMapper::toDto)
                         .toList();
             case FUTURE:
-                return bookingRepository.findAllByBookerIdAndEndingAfter(booker, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByBookerIdAndStartAfter(booker, LocalDateTime.now()).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case CURRENT:
@@ -101,27 +101,27 @@ public class BookingService {
 
         switch (checkAndGetState(state)) {
             case ALL:
-                return bookingRepository.findAllByItemId(owner).stream()
+                return bookingRepository.findAllByItemsOwnerId(owner).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case PAST:
-                return bookingRepository.findAllByItemIdAndEndingBefore(owner, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByItemsOwnerIdAndEndingBefore(owner, LocalDateTime.now()).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case FUTURE:
-                return bookingRepository.findAllByItemIdAndEndingAfter(owner, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByItemsOwnerIdAndStartAfter(owner, LocalDateTime.now()).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case CURRENT:
-                return bookingRepository.findAllByItemIdCurrentBooking(owner, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByItemsOwnerIdCurrentBooking(owner, LocalDateTime.now()).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case WAITING:
-                return bookingRepository.findAllByItemIdAndStatus(owner, BookingStatus.WAITING).stream()
+                return bookingRepository.findAllByItemsOwnerIdAndStatus(owner, BookingStatus.WAITING).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             case REJECTED:
-                return bookingRepository.findAllByItemIdAndStatus(owner, BookingStatus.REJECTED).stream()
+                return bookingRepository.findAllByItemsOwnerIdAndStatus(owner, BookingStatus.REJECTED).stream()
                         .map(BookingMapper::toDto)
                         .toList();
             default:

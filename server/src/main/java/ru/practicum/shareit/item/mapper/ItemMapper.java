@@ -1,18 +1,18 @@
 package ru.practicum.shareit.item.mapper;
 
-import ru.practicum.shareit.item.dto.ItemCreateDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemShortDto;
-import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.Request;
 
 public class ItemMapper {
     public static Item toItem(ItemCreateDto itemCreateDto) {
+        Request request = itemCreateDto.getRequestId() == null ? null : Request.builder().id(itemCreateDto.getRequestId()).build();
         return Item.builder()
                 .name(itemCreateDto.getName())
                 .owner(itemCreateDto.getOwner())
                 .description(itemCreateDto.getDescription())
                 .available(itemCreateDto.getAvailable())
+                .request(request)
                 .build();
     }
 
@@ -32,7 +32,6 @@ public class ItemMapper {
                 .name(item.getName())
                 .owner(item.getOwner())
                 .description(item.getDescription())
-                .request(item.getRequest())
                 .available(item.getAvailable())
                 .lastBooking(item.getLastBooking())
                 .nextBooking(item.getNextBooking())
@@ -45,6 +44,14 @@ public class ItemMapper {
         return ItemShortDto.builder()
                 .name(item.getName())
                 .description(item.getDescription())
+                .build();
+    }
+
+    public static ItemForRequestDto itemForRequestDto(Item item) {
+        return ItemForRequestDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .ownerId(item.getOwner().getId())
                 .build();
     }
 }

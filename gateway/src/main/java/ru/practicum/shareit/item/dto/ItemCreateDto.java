@@ -29,5 +29,5 @@ public class ItemCreateDto {
     @NotNull(message = "the field cannot be empty")
     Boolean available;
     User owner;
-    Long request;
+    Long requestId;
 }

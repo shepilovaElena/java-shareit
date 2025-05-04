@@ -40,13 +40,6 @@ public class ItemMapper {
     }
 
 
-    public static ItemShortDto toShortDto(Item item) {
-        return ItemShortDto.builder()
-                .name(item.getName())
-                .description(item.getDescription())
-                .build();
-    }
-
     public static ItemForRequestDto itemForRequestDto(Item item) {
         return ItemForRequestDto.builder()
                 .id(item.getId())

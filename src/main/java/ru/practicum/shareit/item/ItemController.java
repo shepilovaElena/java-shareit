@@ -8,9 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemCreateDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import ru.practicum.shareit.item.dto.*;
 
 import java.util.List;
 
@@ -61,7 +59,8 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<ItemDto> updateItem(@Valid
-                                              @RequestBody ItemUpdateDto itemUpdateDto,
+                                              @RequestBody
+                                              ItemUpdateDto itemUpdateDto,
                                               @PathVariable
                                               @Positive(message = "item id must be positive")
                                               @NotNull(message = "the field cannot be empty")
@@ -82,5 +81,21 @@ public class ItemController {
                                                      Long userId) {
         log.info("A search request has been received.");
         return ResponseEntity.ok(itemService.searchItems(text, userId));
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public ResponseEntity<CommentDto> addComment(@PathVariable
+                                                 @NotNull(message = "the field cannot be empty")
+                                                 @Positive(message = "user id must be positive")
+                                                 Long itemId,
+                                                 @RequestHeader("X-Sharer-User-Id")
+                                                 @NotNull
+                                                 @Positive(message = "user id must be positive")
+                                                 Long userId,
+                                                 @Valid
+                                                 @RequestBody
+                                                 CommentCreateDto comment) {
+        log.info("Received a request to post comment from user with id {} on item with id {}.", userId, itemId);
+        return ResponseEntity.ok(itemService.addNewComment(itemId, userId, comment));
     }
 }

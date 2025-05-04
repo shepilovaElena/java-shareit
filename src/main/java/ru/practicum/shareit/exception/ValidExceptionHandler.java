@@ -1,6 +1,7 @@
 package ru.practicum.shareit.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,11 +26,24 @@ public class ValidExceptionHandler {
         return new ErrorResponse("NotFound Exception: ", e.getMessage());
     }
 
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
         log.error("An exception has occurred.");
         return new ErrorResponse("Illegal Argument Exception: ", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleRuntimeException(final RuntimeException e) {
+        log.error("An exception has occurred.");
+        return new ErrorResponse("Runtime Exception: ", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleConflict(final DataIntegrityViolationException e) {
+        log.error("An exception has occurred.");
+        return new ErrorResponse("Data Integrity Violation Exception: ", e.getMessage());
     }
 }

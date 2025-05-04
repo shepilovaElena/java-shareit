@@ -10,7 +10,7 @@ public class ItemMapper {
     public static Item toItem(ItemCreateDto itemCreateDto) {
         return Item.builder()
                 .name(itemCreateDto.getName())
-                .ownerId(itemCreateDto.getOwnerId())
+                .owner(itemCreateDto.getOwner())
                 .description(itemCreateDto.getDescription())
                 .available(itemCreateDto.getAvailable())
                 .build();
@@ -26,13 +26,17 @@ public class ItemMapper {
     }
 
     public static ItemDto toDto(Item item) {
+
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
-                .ownerId(item.getOwnerId())
+                .owner(item.getOwner())
                 .description(item.getDescription())
                 .request(item.getRequest())
                 .available(item.getAvailable())
+                .lastBooking(item.getLastBooking())
+                .nextBooking(item.getNextBooking())
+                .comments(item.getItemComments().stream().map(CommentMapper::toShortDto).toList())
                 .build();
     }
 

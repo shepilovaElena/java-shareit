@@ -1,18 +1,46 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.Builder;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.*;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.user.model.User;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * TODO Sprint add-controllers.
  */
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "items")
 public class Item {
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    long id;
    String name;
    String description;
+   @Column(name = "is_available")
    Boolean available;
-   Long ownerId;
+   @ManyToOne
+   @JoinColumn(name = "owner_id")
+   User owner;
+   @Transient
    String request;
+   @OneToOne(fetch = FetchType.EAGER)
+   @JoinColumn(name = "last_booking_id")
+   @Builder.Default
+   Booking lastBooking = null;
+   @OneToOne(fetch = FetchType.EAGER)
+   @JoinColumn(name = "next_booking_id")
+   @Builder.Default
+   Booking nextBooking = null;
+   @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
+   @Builder.Default
+   List<Comment> itemComments = new ArrayList<>();
 }

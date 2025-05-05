@@ -12,6 +12,8 @@ import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.Request;
+import ru.practicum.shareit.request.RequestRepository;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -27,6 +29,7 @@ public class ItemService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final RequestRepository requestRepository;
 
     @Transactional
     public List<ItemDto> getItemsList(Long userId) {
@@ -86,6 +89,9 @@ public class ItemService {
     public ItemDto addNewItem(ItemCreateDto itemCreateDto, long userId) {
         User user = checkUserAndGetUserById(userId);
         itemCreateDto.setOwner(user);
+        if (itemCreateDto.getRequestId() != null) {
+            checkAndGetRequestById(itemCreateDto.getRequestId());
+        }
         Item item = ItemMapper.toItem(itemCreateDto);
         return ItemMapper.toDto(itemRepository.save(item));
     }
@@ -165,5 +171,13 @@ public class ItemService {
         if (bookingOptional.isEmpty()) {
             throw new RuntimeException("User with id " + userId + " сannot leave a comment on the item with id " + itemId + ".");
         }
+    }
+
+    private Request checkAndGetRequestById(long requestId) {
+        Optional<Request> requestOptional = requestRepository.findById(requestId);
+        if (requestOptional.isEmpty()) {
+            throw new NoSuchElementException("Request with id = " + requestId + " not found.");
+        }
+        return requestOptional.get();
     }
 }

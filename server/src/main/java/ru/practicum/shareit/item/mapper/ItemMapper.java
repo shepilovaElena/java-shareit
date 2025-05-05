@@ -26,7 +26,7 @@ public class ItemMapper {
     }
 
     public static ItemDto toDto(Item item) {
-
+    Long requestId = item.getRequest() == null ? null : item.getRequest().getId();
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -35,6 +35,7 @@ public class ItemMapper {
                 .available(item.getAvailable())
                 .lastBooking(item.getLastBooking())
                 .nextBooking(item.getNextBooking())
+                .requestId(requestId)
                 .comments(item.getItemComments().stream().map(CommentMapper::toShortDto).toList())
                 .build();
     }

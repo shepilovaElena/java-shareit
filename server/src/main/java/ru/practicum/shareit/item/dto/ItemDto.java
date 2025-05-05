@@ -23,6 +23,7 @@ public class ItemDto {
     String request;
     Booking lastBooking;
     Booking nextBooking;
+    Long requestId;
     @Builder.Default
     List<CommentShortDto> comments = new ArrayList<>();
 }

@@ -113,9 +113,6 @@ public class ItemService {
 
     public List<ItemDto> searchItems(String text, long userId) {
         checkUserAndGetUserById(userId);
-        if (text.isBlank()) {
-            return List.of();
-        }
         return itemRepository.findAllByOwnerIdAndText(userId, text).stream()
                 .map(ItemMapper::toDto)
                 .toList();
